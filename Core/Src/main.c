@@ -60,6 +60,9 @@ void SystemClock_Config(void);
 uint16_t ADC_Value;
 double Vol_Value;
 uint16_t AD_Value;
+uint32_t adc_values[2];  
+float x_position=0;
+float y_position=0;
 /* USER CODE END 0 */
 
 /**
@@ -95,7 +98,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+	
 	HAL_ADCEx_Calibration_Start(&hadc1);    //AD校准
+	HAL_ADC_Start_DMA(&hadc1,adc_values,2);
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -107,15 +112,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-HAL_ADC_Start(&hadc1);    //启动ADC转换
-  HAL_ADC_PollForConversion(&hadc1,10); //等待转换完成�?10ms表示超时时间
-  AD_Value = HAL_ADC_GetValue(&hadc1);  //读取ADC转换数据�?12位数据）
-  //printf("ADC1_IN1 ADC value: %d\r\n",AD_Value);
-  Vol_Value = AD_Value*(3.3/4096);  //AD值乘以分辨率即为电压�?
-  //printf("ADC1_IN1 VOL value: %.2fV\r\n",Vol_Value);
-
-  HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-  HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */
@@ -167,6 +163,22 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    // 这里在 ADC 转换完成后处理数据
+    // adc_values[0] 为 X 轴的 ADC 值
+    // adc_values[1] 为 Y 轴的 ADC 值
+
+    uint32_t x_value = adc_values[0];  // 获取 X 轴 ADC 值
+    uint32_t y_value = adc_values[1];  // 获取 Y 轴 ADC 值
+
+    // 将 ADC 值转换为电压值
+    float x_voltage = (float)x_value * (3.3f / 4096.0f);  // X 轴电压值
+    float y_voltage = (float)y_value * (3.3f / 4096.0f);  // Y 轴电压值
+
+    // 在这里可以执行更多的数据处理逻辑，例如
+    // 输出到串口、更新显示、触发事件等
+}
 
 /* USER CODE END 4 */
 
